@@ -214,6 +214,44 @@ projects, from either the host or the container:
 find src -name CMakeLists.txt
 ```
 
+## Debug with VS Code in the running container
+
+1. Start the container with `pwrforge docker run -- --rm` as above and leave
+   its shell open.
+2. Install the **Dev Containers** extension (`ms-vscode-remote.remote-containers`)
+   in VS Code on the host. Open the Command Palette and choose
+   **Dev Containers: Attach to Running Container...**, then select the running
+   container using the `cpp_patterns-dev:1.0` image.
+3. In the attached VS Code window, open `/workspace` and install the Microsoft
+   **C/C++** extension (`ms-vscode.cpptools`) **in the container**.
+4. In that window's terminal, build the example with debug symbols:
+
+   ```bash
+   EXAMPLE=decorator/decorator1 pwrforge build --target x86 --profile Debug
+   ```
+
+5. Open `src/decorator/decorator1/decorator1.cpp` and set a breakpoint on
+   `circle.resize(2);`. In **Run and Debug**, select **C++ example (GDB)**
+   and press **F5**. Inspect `circle.radius`: it is `2` at the breakpoint and
+   becomes `4` after **F10** steps over the resize. **F5** continues execution;
+   **Shift+F5** stops debugging.
+
+The shared `.vscode/launch.json` launches
+`build/x86/Debug/bin/cpp_patterns.elf` with the container's `/usr/bin/gdb`.
+Build the desired example in `Debug` before each debugging session; **F5**
+runs the last Debug executable without rebuilding it. The same configuration
+works for other examples after you build them. Add arguments to its `args`
+array when needed. VS Code attaches to the existing container, so building,
+running, and debugging share the same environment and source files.
+
+For a terminal debugger in the same container, build the Debug example and
+run `pwrforge debug --target x86`.
+
+See the official VS Code instructions for
+[attaching to a running container](https://code.visualstudio.com/docs/devcontainers/attach-container)
+and [C++ debugging configuration](https://code.visualstudio.com/docs/cpp/launch-json-reference).
+
+
 ## Optional native builds
 
 Native users must install the dependencies listed in the generated
@@ -235,52 +273,69 @@ pip install -r .devcontainer/requirements.txt
 Set `build-env = "native"` in `pwrforge.toml`, then run:
 
 ```bash
+source .venv/bin/activate
 pwrforge clean
 pwrforge update
-EXAMPLE=decorator/decorator1 pwrforge run --build
+EXAMPLE=decorator/decorator1 pwrforge build --target x86 --profile Debug
+pwrforge run
 ```
 
 Use `pwrforge clean` before switching between host and container builds so CMake
 can regenerate its cached paths for the new environment.
 
+### Debug a native build
+
+After building the selected example in `Debug` as above, start GDB from the
+repository root on the host:
+
+```bash
+pwrforge debug --gdb --target x86
+```
+
+At the GDB prompt:
+
+```gdb
+break main
+run
+next
+continue
+quit
+```
+
+For VS Code, open this repository in a normal local window and install the
+Microsoft **C/C++** extension (`ms-vscode.cpptools`) on the host. Set a source
+breakpoint, choose **C++ example (GDB)** in **Run and Debug**, and press **F5**.
+The shared launch configuration uses the host's `/usr/bin/gdb` and the last
+Debug executable. Build again after editing the source or selecting another
+example; **F5** does not rebuild it.
+
+### Debug an existing Docker build on the host
+
+You can keep `build-env = "docker"` and debug an existing x86 Debug executable
+with the host's GDB. Install GDB and the example's runtime libraries on the
+host, then run these commands from the repository root:
+
+```bash
+source .venv/bin/activate
+pwrforge debug --gdb --target x86
+```
+
+`--gdb` starts the debugger locally. For an executable built inside Docker,
+map the recorded `/workspace` source paths to the current repository before
+running it:
+
+```gdb
+set substitute-path /workspace .
+break main
+run
+```
+
+The shared VS Code launch configuration includes the equivalent
+`sourceFileMap`, so **C++ example (GDB)** also supports this workflow from a
+local VS Code window. See the
+[VS Code source path mapping documentation](https://code.visualstudio.com/docs/cpp/launch-json-reference#sourcefilemap).
+
 ## References
 
 These teaching examples are based on
 [Design Patterns in Modern C++](https://www.udemy.com/course/patterns-cplusplusout/).
-
-## Debug with VS Code in the running container
-
-1. Start the container with `pwrforge docker run -- --rm` as above and leave
-   its shell open.
-2. Install the **Dev Containers** extension (`ms-vscode-remote.remote-containers`)
-   in VS Code on the host. Open the Command Palette and choose
-   **Dev Containers: Attach to Running Container...**, then select the running
-   container using the `cpp_patterns-dev:1.0` image.
-3. In the attached VS Code window, open `/workspace` and install the Microsoft
-   **C/C++** extension (`ms-vscode.cpptools`) **in the container**.
-4. In that window's terminal, build the example with debug symbols:
-
-   ```bash
-   EXAMPLE=decorator/decorator1 pwrforge build --target x86 --profile Debug
-   ```
-
-5. Open `src/decorator/decorator1/decorator1.cpp` and set a breakpoint on
-   `circle.resize(2);`. In **Run and Debug**, select **C++ example (Docker)**
-   and press **F5**. Inspect `circle.radius`: it is `2` at the breakpoint and
-   becomes `4` after **F10** steps over the resize. **F5** continues execution;
-   **Shift+F5** stops debugging.
-
-The shared `.vscode/launch.json` launches
-`build/x86/Debug/bin/cpp_patterns.elf` with the container's `/usr/bin/gdb`.
-Build the desired example in `Debug` before each debugging session; **F5**
-runs the last Debug executable without rebuilding it. The same configuration
-works for other examples after you build them. Add arguments to its `args`
-array when needed. VS Code attaches to the existing container, so building,
-running, and debugging share the same environment and source files.
-
-For a terminal debugger in the same container, build the Debug example and
-run `pwrforge debug --target x86`.
-
-See the official VS Code instructions for
-[attaching to a running container](https://code.visualstudio.com/docs/devcontainers/attach-container)
-and [C++ debugging configuration](https://code.visualstudio.com/docs/cpp/launch-json-reference).
