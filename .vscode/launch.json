@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "C++ example (Docker)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/x86/Debug/bin/cpp_patterns.elf",
+            "args": [],
+            "cwd": "${workspaceFolder}/build/x86/Debug/bin",
+            "stopAtEntry": false,
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable GDB pretty printing",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}

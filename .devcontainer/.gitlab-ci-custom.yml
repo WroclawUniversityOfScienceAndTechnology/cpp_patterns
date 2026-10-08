@@ -1,0 +1,9 @@
+# user can add his cicd code below which will be integrated with
+# main cicd file and not overwritten by pwrforge update
+
+# Keep the generated pipeline, with artifact paths matching the x86 build tree.
+debug:
+  artifacts:
+    paths:
+      - build/x86/Debug/bin
+      - build/x86/Debug/lib

@@ -1,0 +1,3 @@
+# The installed local pwrforge 0.1.1 distribution also bundles this older wheel.
+# Its generated Dockerfile expects the current wheel to be the only COPY match.
+pwrforge-0.1.0-py3-none-any.whl

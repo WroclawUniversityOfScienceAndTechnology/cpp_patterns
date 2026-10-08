@@ -1,0 +1,7 @@
+# user can add his docker code below which will be integrated with
+# main docker file and not overwritten by pwrforge update
+
+# Install the examples' system libraries once in the shared x86 image.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libboost-system-dev libboost-serialization-dev libcpprest-dev libgtest-dev \
+    && rm -rf /var/lib/apt/lists/*

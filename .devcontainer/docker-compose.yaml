@@ -1,0 +1,30 @@
+name: pwrforge-cpp_patterns-013fbeb8ff10
+services:
+  cpp_patterns_dev:
+    image: cpp_patterns-dev:1.0
+    platform: linux/amd64
+    build:
+      context: .
+      # in case of missing .env file (eg. CI/CD) system will use default values
+      args:
+        GID_NUMBER: ${GID_NUMBER:-1000}
+        UID_NUMBER: ${UID_NUMBER:-1000}
+        DOCKER_IMAGE_ROOT: ${DOCKER_IMAGE_ROOT:-ubuntu:24.04}
+        CONAN_LOGIN_USERNAME: ${CONAN_LOGIN_USERNAME:-""}
+        CONAN_PASSWORD: ${CONAN_PASSWORD:-""}
+    privileged: true
+    group_add:
+      - "4"
+      - "20"
+      - "24"
+      - "27"
+      - "30"
+      - "46"
+      - "100"
+      - "114"
+      - "124"
+      - "984"
+    volumes:
+      - ..:/workspace
+      - /dev:/dev
+    command: sleep infinity
